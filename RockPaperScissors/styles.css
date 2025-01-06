@@ -1,0 +1,149 @@
+*{
+
+    font-family:monospace;
+}
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: linear-gradient(to bottom, #002f58, #005357);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+/* Center the Main Game Content */
+.main {
+    background: rgba(255, 255, 255, 0.394);
+    padding: 30px;
+    border-radius: 10px;
+    border-color: 2px solid black;
+    text-align: center;
+    box-shadow: 0px 8px 20px rgba(150, 150, 150, 0.5);
+    width: 90%;
+    max-width: 500px;
+}
+
+/* Title Styling */
+h1 {
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 5px #000;
+}
+
+/* Scores Section */
+.scores {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.scores span {
+    color: #ffcc00;
+}
+
+/* Message Styling */
+#message {
+    font-size: 1.8rem;
+    margin: 15px 0;
+    animation: fade-in 0.5s ease-in-out;
+}
+
+/* Choices Highlighting */
+.choice-button {
+    background: #ff7b54;
+    border: none;
+    border-radius: 5px;
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 1rem;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+/* Tooltip Styling */
+.choice-button .tooltip {
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px 10px;
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.choice-button:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Hover Effects */
+.choice-button:hover {
+    background: #ff5733;
+    transform: translateY(-3px);
+}
+
+
+
+/* Reset Button Styling */
+.reset-button {
+    background: #ff4444;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 15px 30px;
+    margin-top: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    margin: 20px auto 0;
+    text-align: center;
+}
+
+.reset-button:hover {
+    background: #cc0000;
+    transform: translateY(-3px);
+}
+
+/* Animations */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Error Message Styling */
+.error {
+    color: #ff4444;
+    font-weight: bold;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
