@@ -1,29 +1,61 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    color: white;
+}
+
+#score {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* Grid (Game Area) */
 .grid {
     position: relative;
     width: 600px;
     height: 300px;
-    border: solid black 1px;
-    margin: 50px auto;
+    background: #f0f0f0;
+    border: 3px solid #333;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
 }
 
+/* Blocks */
 .block {
     position: absolute;
     width: 100px;
     height: 20px;
-    background-color: blue;
+    background: linear-gradient(135deg, #0077ff, #00bbff);
+    border-radius: 4px;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
 }
 
+/* User Paddle */
 .user {
     position: absolute;
     width: 100px;
     height: 20px;
-    background-color: purple;
+    background: linear-gradient(135deg, #800080, #b300b3);
+    border-radius: 10px;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
 }
 
+/* Ball */
 .ball {
     position: absolute;
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: red;
+    background: radial-gradient(circle, #ff0000, #cc0000);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
 }
