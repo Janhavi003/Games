@@ -1,0 +1,82 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+h3 {
+    margin: 10px 0;
+    color: #333;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.grid {
+    margin: 20px auto;
+    border: 2px solid #333;
+    height: 180px;
+    width: 180px;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    background-color: #fff;
+}
+
+.grid div {
+    height: 20px;
+    width: 20px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.ending-block {
+    background-color: #ff5252;
+}
+
+.starting-block {
+    background-color: #2196f3;
+}
+
+.log-left, .log-right {
+    background-color: #80d8ff;
+}
+
+.car-left, .car-right {
+    background-color: #e0e0e0;
+}
+
+.l1, .l2, .l3 {
+    background-color: #8d6e63;
+}
+
+.l4, .l5 {
+    background-color: #80d8ff;
+}
+
+.c1 {
+    background-color: #000;
+}
+
+.c2, .c3 {
+    background-color: #757575;
+}
+
+.frog {
+    background-color: #4caf50;
+    
+}
