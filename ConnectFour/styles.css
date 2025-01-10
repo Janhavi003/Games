@@ -1,0 +1,139 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    transition: all 0.3s ease;
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+}
+
+body.classic {
+    background-color: #f0f0f0;
+}
+
+body.futuristic {
+    background-color: #000;
+    color: #0ff;
+}
+
+body.fantasy {
+    background-color: #2a0845;
+    color: #ffd700;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 20px auto;
+}
+
+.classic #board {
+    background-color: blue;
+}
+
+.futuristic #board {
+    background-color: #333;
+    box-shadow: 0 0 20px #0ff;
+}
+
+.fantasy #board {
+    background-color: #4a148c;
+    box-shadow: 0 0 20px #ffd700;
+}
+
+.cell {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.classic .cell {
+    background-color: white;
+}
+
+.futuristic .cell {
+    background-color: #111;
+    border: 2px solid #0ff;
+}
+
+.fantasy .cell {
+    background-color: #673ab7;
+    border: 2px solid #ffd700;
+}
+
+
+.classic .red { background-color: red; }
+.classic .yellow { background-color: yellow; }
+
+.futuristic .red { background-color: #ff0066; }
+.futuristic .yellow { background-color: #00ff66; }
+
+.fantasy .red { background-color: #ff4081; }
+.fantasy .yellow { background-color: #ffd700; }
+
+@keyframes dropPiece {
+    from { transform: translateY(-300px); }
+    to { transform: translateY(0); }
+}
+
+.dropping {
+    animation: dropPiece 0.5s ease-in;
+}
+
+@keyframes winner {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.winner {
+    animation: winner 0.5s infinite;
+}
+
+.controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+.scores {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+    font-size: 1.2em;
+}
+
+
+#themeSelect {
+    padding: 5px 10px;
+    margin: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+}
