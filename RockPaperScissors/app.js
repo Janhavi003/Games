@@ -11,6 +11,7 @@ let userChoice;
 let computerChoice;
 let userScore = 0;
 let computerScore = 0;
+let ties = 0;
 
 const validChoices = ['rock', 'paper', 'scissors'];
 
@@ -19,6 +20,11 @@ const outcomes = {
     paper: { rock: 'win', paper: 'draw', scissors: 'lose' },
     scissors: { rock: 'lose', paper: 'win', scissors: 'draw' },
 };
+
+// Audio files
+const winSound = new Audio('win.mp3');
+const loseSound = new Audio('lose.mp3');
+const drawSound = new Audio('draw.wav');
 
 // Event listener for user choice
 possibleChoices.forEach(choice => choice.addEventListener('click', (e) => {
@@ -56,15 +62,20 @@ function determineResult() {
     messageDisplay.innerHTML = resultText[result];
     resultDisplay.className = result;
 
-    // Highlight the winner
-    highlightChoice(userChoice, computerChoice, result);
-
-    // Update scores based on the result
+    // Play the corresponding sound effect
     if (result === 'win') {
+        winSound.play();
         userScore++;
     } else if (result === 'lose') {
+        loseSound.play();
         computerScore++;
+    } else {
+        drawSound.play();
+        ties++; // Increment ties for a draw
     }
+
+    // Highlight the winner
+    highlightChoice(userChoice, computerChoice, result);
 }
 
 // Highlight winning choice
@@ -88,6 +99,7 @@ function resetHighlights() {
 function updateScores() {
     userScoreDisplay.innerHTML = userScore;
     computerScoreDisplay.innerHTML = computerScore;
+    document.getElementById('ties-score').innerHTML = ties;
 }
 
 // Handle invalid input
@@ -100,6 +112,7 @@ function handleInvalidInput() {
 resetButton.addEventListener('click', () => {
     userScore = 0;
     computerScore = 0;
+    ties = 0;
     userChoice = '';
     computerChoice = '';
     userChoiceDisplay.innerHTML = '';
@@ -109,5 +122,6 @@ resetButton.addEventListener('click', () => {
     resultDisplay.className = '';
     userScoreDisplay.innerHTML = userScore;
     computerScoreDisplay.innerHTML = computerScore;
+    document.getElementById('ties-score').innerHTML = ties;
     resetHighlights();
 });

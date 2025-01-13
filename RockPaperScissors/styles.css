@@ -1,7 +1,7 @@
-*{
-
-    font-family:monospace;
+* {
+    font-family: monospace;
 }
+
 body {
     margin: 0;
     padding: 0;
@@ -13,7 +13,6 @@ body {
     color: #fff;
 }
 
-/* Center the Main Game Content */
 .main {
     background: rgba(255, 255, 255, 0.394);
     padding: 30px;
@@ -25,14 +24,12 @@ body {
     max-width: 500px;
 }
 
-/* Title Styling */
 h1 {
     margin-bottom: 20px;
     font-size: 2.5rem;
     text-shadow: 2px 2px 5px #000;
 }
 
-/* Scores Section */
 .scores {
     display: flex;
     justify-content: space-around;
@@ -45,14 +42,12 @@ h1 {
     color: #ffcc00;
 }
 
-/* Message Styling */
 #message {
     font-size: 1.8rem;
     margin: 15px 0;
     animation: fade-in 0.5s ease-in-out;
 }
 
-/* Choices Highlighting */
 .choice-button {
     background: #ff7b54;
     border: none;
@@ -67,39 +62,21 @@ h1 {
     position: relative;
 }
 
-/* Tooltip Styling */
-.choice-button .tooltip {
-    visibility: hidden;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    text-align: center;
-    border-radius: 5px;
-    padding: 5px 10px;
-    position: absolute;
-    bottom: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.8rem;
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 10;
+.choice-button:active {
+    animation: bounce 0.3s ease-out;
 }
 
-.choice-button:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
+@keyframes bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }
 
-/* Hover Effects */
 .choice-button:hover {
     background: #ff5733;
     transform: translateY(-3px);
 }
 
-
-
-/* Reset Button Styling */
 .reset-button {
     background: #ff4444;
     color: #fff;
@@ -123,7 +100,6 @@ h1 {
     transform: translateY(-3px);
 }
 
-/* Animations */
 @keyframes fade-in {
     from {
         opacity: 0;
@@ -133,7 +109,6 @@ h1 {
     }
 }
 
-/* Error Message Styling */
 .error {
     color: #ff4444;
     font-weight: bold;
