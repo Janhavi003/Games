@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Four</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Connect Four</h1>
+        
+        <select id="themeSelect">
+            <option value="classic">Classic Theme</option>
+            <option value="futuristic">Futuristic Theme</option>
+            <option value="fantasy">Fantasy Theme</option>
+        </select>
+        <div class="scores">
+            <div>Red: <span id="score1">0</span></div>
+            <div>Yellow: <span id="score2">0</span></div>
+        </div>
+
+        <div id="board"></div>
+        
+        <div class="controls">
+            <button id="resetBtn">New Game</button>
+            <button id="resetScores">Reset Scores</button>
+            <label>
+                <input type="checkbox" id="soundToggle" checked>
+                Sound Effects
+            </label>
+        </div>
+    </div>
+
+    <audio id="dropSound" src="data:audio/wav;base64,UklGRpQGAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YXAGAACAgICAgICAgICAgICAgICAgICAgICAgIA+AD4APgA+AD4APgA+AD4APgA+AD4APgA+AD4APgA+AD4APgA+AA==" preload="auto"></audio>
+    <audio id="winSound" src="data:audio/wav;base64,UklGRpQGAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YXAGAACBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgT8APwA/AD8APwA/AD8APwA/AD8APwA/AD8APwA/AD8APwA/AD8APwA=" preload="auto"></audio>
+    
+    <script src="app.js"></script>
+</body>
+</html>
