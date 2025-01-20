@@ -1,5 +1,8 @@
+// DOM elements
 const timeLeftDisplay = document.querySelector('#time-left')
 const resultDisplay = document.querySelector('#result')
+const scoreDisplay = document.querySelector('#score')
+const livesDisplay = document.querySelector('#lives')
 const startPauseButton = document.querySelector('#start-pause-button')
 const squares = document.querySelectorAll('.grid div')
 const logsLeft = document.querySelectorAll('.log-left')
@@ -7,164 +10,247 @@ const logsRight = document.querySelectorAll('.log-right')
 const carsLeft = document.querySelectorAll('.car-left')
 const carsRight = document.querySelectorAll('.car-right')
 
+// Sound effects
+const sounds = {
+    jump: new Audio('jump.mp3'),
+    splash: new Audio('splash.mp3'),
+    crash: new Audio('crash.mp3'),
+    powerUp: new Audio('powerup.mp3'),
+    win: new Audio('win.mp3'),
+    background: new Audio('background.mp3')
+}
+
+sounds.background.loop = true
+let isSoundEnabled = true
+
+// Game state
 let currentIndex = 76
 const width = 9
 let timerId
 let outcomeTimerId
 let currentTime = 20
+let score = 0
+let lives = 3
+let level = 1
+let isInvincible = false
+let hasSpeedBoost = false
+let gameSpeed = 1000 // Base speed in milliseconds
+
+// Power-up system
+const powerUpTypes = ['invincibility', 'speedBoost', 'extraTime', 'extraLife']
+let activePowerUps = []
+
+function playSound(soundName) {
+    if (isSoundEnabled && sounds[soundName]) {
+        sounds[soundName].currentTime = 0
+        sounds[soundName].play()
+    }
+}
 
 function moveFrog(e) {
     squares[currentIndex].classList.remove('frog')
-
+    
+    let moveAmount = hasSpeedBoost ? 2 : 1
+    
     switch(e.key) {
-        case 'ArrowLeft' :
-             if (currentIndex % width !== 0) currentIndex -= 1
+        case 'ArrowLeft':
+            if (currentIndex % width !== 0) currentIndex -= moveAmount
             break
-        case 'ArrowRight' :
-            if (currentIndex % width < width - 1) currentIndex += 1
+        case 'ArrowRight':
+            if (currentIndex % width < width - moveAmount) currentIndex += moveAmount
             break
-        case 'ArrowUp' :
-            if (currentIndex - width >=0 ) currentIndex -= width
+        case 'ArrowUp':
+            if (currentIndex - width * moveAmount >= 0) {
+                currentIndex -= width * moveAmount
+                score += 10 // Points for moving forward
+            }
             break
-        case 'ArrowDown' :
-            if (currentIndex + width < width * width) currentIndex += width
+        case 'ArrowDown':
+            if (currentIndex + width * moveAmount < width * width) currentIndex += width * moveAmount
             break
     }
+    
     squares[currentIndex].classList.add('frog')
+    playSound('jump')
+    checkForPowerUp()
+    scoreDisplay.textContent = score
+}
+
+function spawnPowerUp() {
+    const spawnChance = 0.1 + (level * 0.02) // Increased chance with level
+    if (Math.random() < spawnChance) {
+        const emptySquares = Array.from(squares).filter(square => 
+            !square.classList.contains('frog') && 
+            !square.classList.contains('car-left') && 
+            !square.classList.contains('car-right') &&
+            !square.classList.contains('power-up')
+        )
+        
+        if (emptySquares.length) {
+            const randomSquare = emptySquares[Math.floor(Math.random() * emptySquares.length)]
+            const powerUpType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)]
+            randomSquare.classList.add('power-up', powerUpType)
+        }
+    }
+}
+
+function checkForPowerUp() {
+    const currentSquare = squares[currentIndex]
+    if (currentSquare.classList.contains('power-up')) {
+        const powerUpType = powerUpTypes.find(type => currentSquare.classList.contains(type))
+        activatePowerUp(powerUpType)
+        currentSquare.classList.remove('power-up', powerUpType)
+        playSound('powerUp')
+    }
+}
+
+function activatePowerUp(type) {
+    const duration = 5000 // 5 seconds for temporary power-ups
+    
+    switch(type) {
+        case 'invincibility':
+            isInvincible = true
+            squares[currentIndex].classList.add('invincible')
+            setTimeout(() => {
+                isInvincible = false
+                squares[currentIndex].classList.remove('invincible')
+            }, duration)
+            break
+            
+        case 'speedBoost':
+            hasSpeedBoost = true
+            squares[currentIndex].classList.add('speed-boost')
+            setTimeout(() => {
+                hasSpeedBoost = false
+                squares[currentIndex].classList.remove('speed-boost')
+            }, duration)
+            break
+            
+        case 'extraTime':
+            currentTime += 10
+            timeLeftDisplay.textContent = currentTime
+            break
+            
+        case 'extraLife':
+            lives++
+            livesDisplay.textContent = lives
+            break
+    }
+    
+    score += 50 // Bonus points for collecting power-ups
+    scoreDisplay.textContent = score
 }
 
 function autoMoveElements() {
     currentTime--
     timeLeftDisplay.textContent = currentTime
-    logsLeft.forEach(logLeft => moveLogLeft(logLeft))
-    logsRight.forEach(logRight => moveLogRight(logRight))
-    carsLeft.forEach(carLeft => moveCarLeft(carLeft))
-    carsRight.forEach(carRight => moveCarRight(carRight))
+    
+    // Speed increases with level
+    const speedMultiplier = 1 + (level * 0.1)
+    
+    moveElements(logsLeft, 'left', speedMultiplier)
+    moveElements(logsRight, 'right', speedMultiplier)
+    moveElements(carsLeft, 'left', speedMultiplier)
+    moveElements(carsRight, 'right', speedMultiplier)
+    
+    spawnPowerUp()
+}
+
+function moveElements(elements, direction, speedMultiplier) {
+    elements.forEach(element => {
+        const currentClass = Array.from(element.classList).find(className => /[lc][1-5]/.test(className))
+        const currentNumber = parseInt(currentClass.charAt(1))
+        let newNumber
+        
+        if (direction === 'left') {
+            newNumber = currentNumber === 5 ? 1 : currentNumber + 1
+        } else {
+            newNumber = currentNumber === 1 ? 5 : currentNumber - 1
+        }
+        
+        element.classList.remove(currentClass)
+        element.classList.add(`${currentClass.charAt(0)}${newNumber}`)
+    })
 }
 
 function checkOutComes() {
-    lose()
-    win()
-}
-
-function moveLogLeft(logLeft) {
-    switch(true) {
-        case logLeft.classList.contains('l1') :
-            logLeft.classList.remove('l1')
-            logLeft.classList.add('l2')
-            break
-        case logLeft.classList.contains('l2') :
-            logLeft.classList.remove('l2')
-            logLeft.classList.add('l3')
-            break
-        case logLeft.classList.contains('l3') :
-            logLeft.classList.remove('l3')
-            logLeft.classList.add('l4')
-            break
-        case logLeft.classList.contains('l4') :
-            logLeft.classList.remove('l4')
-            logLeft.classList.add('l5')
-            break
-        case logLeft.classList.contains('l5') :
-            logLeft.classList.remove('l5')
-            logLeft.classList.add('l1')
-            break
+    if (checkLose()) {
+        handleLose()
+    }
+    if (checkWin()) {        
+        handleWin()
     }
 }
 
-function moveLogRight(logRight) {
-    switch(true) {
-        case logRight.classList.contains('l1') :
-            logRight.classList.remove('l1')
-            logRight.classList.add('l5')
-            break
-        case logRight.classList.contains('l2') :
-            logRight.classList.remove('l2')
-            logRight.classList.add('l1')
-            break
-        case logRight.classList.contains('l3') :
-            logRight.classList.remove('l3')
-            logRight.classList.add('l2')
-            break
-        case logRight.classList.contains('l4') :
-            logRight.classList.remove('l4')
-            logRight.classList.add('l3')
-            break
-        case logRight.classList.contains('l5') :
-            logRight.classList.remove('l5')
-            logRight.classList.add('l4')
-            break
-    }
+function checkLose() {
+    const currentSquare = squares[currentIndex]
+    // Check if the frog is on a car or off the grid
+    return currentSquare.classList.contains('car-left') || 
+           currentSquare.classList.contains('car-right') ||
+           currentSquare.classList.contains('water') ||
+           currentTime <= 0
 }
 
-function moveCarLeft(carLeft) {
-    switch(true) {
-        case carLeft.classList.contains('c1') :
-            carLeft.classList.remove('c1')
-            carLeft.classList.add('c2')
-            break
-        case carLeft.classList.contains('c2') :
-            carLeft.classList.remove('c2')
-            carLeft.classList.add('c3')
-            break
-        case carLeft.classList.contains('c3') :
-            carLeft.classList.remove('c3')
-            carLeft.classList.add('c1')
-            break
-    }
-}
-
-function moveCarRight(carRight) {
-    switch(true) {
-        case carRight.classList.contains('c1') :
-            carRight.classList.remove('c1')
-            carRight.classList.add('c3')
-            break
-        case carRight.classList.contains('c2') :
-            carRight.classList.remove('c2')
-            carRight.classList.add('c1')
-            break
-        case carRight.classList.contains('c3') :
-            carRight.classList.remove('c3')
-            carRight.classList.add('c2')
-            break
-    }
-}
-
-function lose() {
-    if (
-        squares[currentIndex].classList.contains('c1') ||
-        squares[currentIndex].classList.contains('l4') ||
-        squares[currentIndex].classList.contains('l5') ||
-        currentTime <= 0
-    ) {
-        resultDisplay.textContent = 'You lose!'
+function handleLose() {
+    if (isInvincible) return // Frog is invincible, no lose
+    
+    lives--
+    livesDisplay.textContent = lives
+    
+    if (lives <= 0) {
+        playSound('crash')
+        resultDisplay.textContent = 'Game Over'
         clearInterval(timerId)
         clearInterval(outcomeTimerId)
-        squares[currentIndex].classList.remove('frog')
-        document.removeEventListener('keyup', moveFrog)
+    } else {
+        playSound('crash')
+        resetFrogPosition()
     }
 }
 
-function win() {
-    if (squares[currentIndex].classList.contains('ending-block')) {
-        resultDisplay.textContent = 'You Win!'
-        clearInterval(timerId)
-        clearInterval(outcomeTimerId)
-        document.removeEventListener('keyup', moveFrog)
-    }
+function resetFrogPosition() {
+    currentIndex = 76 // Start position
+    squares[currentIndex].classList.add('frog')
 }
 
-startPauseButton.addEventListener('click', () => {
+function checkWin() {
+    const currentSquare = squares[currentIndex]
+    // Check if the frog reached the top
+    return currentIndex < width
+}
+
+function handleWin() {
+    playSound('win')
+    level++
+    levelDisplay.textContent = level
+    resetFrogPosition()
+    currentTime = 20 // Reset time
+    timeLeftDisplay.textContent = currentTime
+    score += 100 // Points for winning the level
+    scoreDisplay.textContent = score
+}
+
+function startPauseGame() {
     if (timerId) {
         clearInterval(timerId)
         clearInterval(outcomeTimerId)
-        outcomeTimerId = null
         timerId = null
-        document.removeEventListener('keyup', moveFrog)
+        outcomeTimerId = null
+        startPauseButton.textContent = 'Start'
     } else {
-        timerId = setInterval(autoMoveElements, 1000)
+        timerId = setInterval(autoMoveElements, gameSpeed)
         outcomeTimerId = setInterval(checkOutComes, 50)
-        document.addEventListener('keyup', moveFrog)
+        startPauseButton.textContent = 'Pause'
     }
-})
+}
+
+function initGame() {
+    startPauseButton.addEventListener('click', startPauseGame)
+    document.addEventListener('keydown', moveFrog)
+    resetFrogPosition()
+    timeLeftDisplay.textContent = currentTime
+    scoreDisplay.textContent = score
+    livesDisplay.textContent = lives
+}
+
+initGame()
