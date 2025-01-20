@@ -1,12 +1,14 @@
-
 let board = [];
 let currentPlayer = 'red';
 let scores = { red: 0, yellow: 0 };
 let soundEnabled = true;
+let turnTimer;
 const ROWS = 6;
 const COLS = 7;
+const TURN_TIME = 10000; // 10 seconds
 
 function initGame() {
+    clearTimeout(turnTimer);
     const boardElement = document.getElementById('board');
     boardElement.innerHTML = '';
     board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
@@ -19,6 +21,24 @@ function initGame() {
             boardElement.appendChild(cell);
         }
     }
+
+    resetTurnTimer();
+}
+
+function resetTurnTimer() {
+    clearTimeout(turnTimer);
+    const timerElement = document.getElementById('turnTimer');
+    timerElement.style.width = '100%';
+
+    turnTimer = setInterval(() => {
+        const width = parseFloat(timerElement.style.width);
+        if (width <= 0) {
+            clearTimeout(turnTimer);
+            switchTurn();
+        } else {
+            timerElement.style.width = `${width - 10}%`;
+        }
+    }, TURN_TIME / 10);
 }
 
 function playSound(soundId) {
@@ -36,25 +56,74 @@ function getLowestEmptyRow(col) {
     return null;
 }
 
-function updateBoard() {
-    const cells = document.getElementsByClassName('cell');
-    for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
-            const cell = cells[row * COLS + col];
-            cell.className = 'cell';
-            if (board[row][col]) {
-                cell.classList.add(board[row][col]);
+function makeMove(col) {
+    const row = getLowestEmptyRow(col);
+    if (row === null) return;
+
+    board[row][col] = currentPlayer;
+    updateBoard();
+
+    if (checkWin(row, col)) {
+        playSound('winSound');
+        scores[currentPlayer]++;
+        updateScores();
+        highlightWinningCells();
+        setTimeout(() => {
+            alert(`${currentPlayer.toUpperCase()} wins!`);
+            initGame();
+        }, 500);
+        return;
+    }
+
+    if (checkDraw()) {
+        setTimeout(() => {
+            alert("It's a draw!");
+            initGame();
+        }, 100);
+        return;
+    }
+
+    switchTurn();
+}
+
+function switchTurn() {
+    currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+    if (currentPlayer === 'yellow' && document.getElementById('aiToggle').checked) {
+        setTimeout(aiMove, 500); // AI delays for realism
+    } else {
+        resetTurnTimer();
+    }
+}
+
+function aiMove() {
+    let move = null;
+
+    // AI tries to block or win
+    for (let col = 0; col < COLS; col++) {
+        if (getLowestEmptyRow(col) !== null) {
+            board[getLowestEmptyRow(col)][col] = currentPlayer;
+            if (checkWin(getLowestEmptyRow(col), col)) {
+                move = col;
+                break;
             }
+            board[getLowestEmptyRow(col)][col] = null; // Undo test move
         }
     }
+
+    // Random move if no win/block is found
+    if (move === null) {
+        const availableCols = [...Array(COLS).keys()].filter(
+            col => getLowestEmptyRow(col) !== null
+        );
+        move = availableCols[Math.floor(Math.random() * availableCols.length)];
+    }
+
+    makeMove(move);
 }
 
 function checkWin(row, col) {
     const directions = [
-        [0, 1],  
-        [1, 0],  
-        [1, 1],  
-        [1, -1]  
+        [0, 1], [1, 0], [1, 1], [1, -1]
     ];
 
     return directions.some(([dx, dy]) => {
@@ -85,35 +154,6 @@ function countDirection(row, col, dx, dy) {
     return count;
 }
 
-function highlightWinningCells() {
-    const cells = document.getElementsByClassName('cell');
-    for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
-            if (board[row][col] === currentPlayer) {
-                if (isPartOfWinningLine(row, col)) {
-                    cells[row * COLS + col].classList.add('winner');
-                }
-            }
-        }
-    }
-}
-
-function isPartOfWinningLine(row, col) {
-    const directions = [
-        [0, 1],  
-        [1, 0],  
-        [1, 1],  
-        [1, -1]  
-    ];
-
-    return directions.some(([dx, dy]) => {
-        let count = 1;
-        count += countDirection(row, col, dx, dy);
-        count += countDirection(row, col, -dx, -dy);
-        return count >= 4;
-    });
-}
-
 function checkDraw() {
     return board[0].every(cell => cell !== null);
 }
@@ -123,39 +163,17 @@ function updateScores() {
     document.getElementById('score2').textContent = scores.yellow;
 }
 
-function makeMove(col) {
-    const row = getLowestEmptyRow(col);
-    if (row === null) return;
-
-    board[row][col] = currentPlayer;
+function updateBoard() {
     const cells = document.getElementsByClassName('cell');
-    const currentCell = cells[row * COLS + col];
-    currentCell.classList.add('dropping');
-    playSound('dropSound');
-
-    updateBoard();
-
-    if (checkWin(row, col)) {
-        playSound('winSound');
-        scores[currentPlayer]++;
-        updateScores();
-        highlightWinningCells();
-        setTimeout(() => {
-            alert(`${currentPlayer.toUpperCase()} wins!`);
-            initGame();
-        }, 500);
-        return;
+    for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+            const cell = cells[row * COLS + col];
+            cell.className = 'cell';
+            if (board[row][col]) {
+                cell.classList.add(board[row][col]);
+            }
+        }
     }
-
-    if (checkDraw()) {
-        setTimeout(() => {
-            alert("It's a draw!");
-            initGame();
-        }, 100);
-        return;
-    }
-
-    currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
 }
 
 document.addEventListener('click', (e) => {
@@ -166,10 +184,6 @@ document.addEventListener('click', (e) => {
 
 document.getElementById('themeSelect').addEventListener('change', (e) => {
     document.body.className = e.target.value;
-});
-
-document.getElementById('soundToggle').addEventListener('change', (e) => {
-    soundEnabled = e.target.checked;
 });
 
 document.getElementById('resetScores').addEventListener('click', () => {
