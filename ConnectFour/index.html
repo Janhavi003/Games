@@ -15,16 +15,25 @@
             <option value="futuristic">Futuristic Theme</option>
             <option value="fantasy">Fantasy Theme</option>
         </select>
+        
         <div class="scores">
             <div>Red: <span id="score1">0</span></div>
             <div>Yellow: <span id="score2">0</span></div>
         </div>
-
+        
+        <div id="turnTimerContainer">
+            <div id="turnTimer"></div>
+        </div>
+        
         <div id="board"></div>
         
         <div class="controls">
             <button id="resetBtn">New Game</button>
             <button id="resetScores">Reset Scores</button>
+            <label>
+                <input type="checkbox" id="aiToggle">
+                Play Against AI
+            </label>
             <label>
                 <input type="checkbox" id="soundToggle" checked>
                 Sound Effects

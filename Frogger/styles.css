@@ -1,14 +1,32 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    background-color: #f0f0f0;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
     margin: 0;
-    padding: 0;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-container {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
 }
 
 h3 {
     margin: 10px 0;
-    color: #333;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 button {
@@ -20,6 +38,7 @@ button {
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
+    transition: background-color 0.3s;
 }
 
 button:hover {
@@ -33,8 +52,8 @@ button:hover {
     width: 180px;
     display: flex;
     flex-wrap: wrap;
-    position: relative;
-    background-color: #fff;
+    background-color: #222;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .grid div {
@@ -53,7 +72,7 @@ button:hover {
 }
 
 .log-left, .log-right {
-    background-color: #80d8ff;
+    background-color: #8d6e63;
 }
 
 .car-left, .car-right {
@@ -61,22 +80,74 @@ button:hover {
 }
 
 .l1, .l2, .l3 {
-    background-color: #8d6e63;
+    background: linear-gradient(45deg, #8d6e63, #a1887f);
 }
 
 .l4, .l5 {
-    background-color: #80d8ff;
+    background: linear-gradient(45deg, #80d8ff, #40c4ff);
 }
 
 .c1 {
-    background-color: #000;
+    background: linear-gradient(45deg, #000000, #424242);
 }
 
 .c2, .c3 {
-    background-color: #757575;
+    background: linear-gradient(45deg, #757575, #9e9e9e);
 }
 
 .frog {
     background-color: #4caf50;
-    
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Power-up styles */
+.power-up {
+    border-radius: 50%;
+    border: 2px solid gold;
+    animation: glow 1.5s infinite alternate;
+}
+
+.invincibility {
+    background: linear-gradient(45deg, #ffd700, #ffa500);
+}
+
+.speedBoost {
+    background: linear-gradient(45deg, #00bcd4, #80deea);
+}
+
+.extraTime {
+    background: linear-gradient(45deg, #4caf50, #81c784);
+}
+
+.extraLife {
+    background: linear-gradient(45deg, #f44336, #ef9a9a);
+}
+
+.invincible {
+    animation: pulse 1s infinite;
+}
+
+.speed-boost {
+    animation: zoom 0.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px gold;
+    }
+    to {
+        box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px gold;
+    }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes zoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); }
 }

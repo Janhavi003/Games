@@ -2,16 +2,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const grid = document.querySelector('.grid');
     const scoreElement = document.querySelector('#score');
     const livesElement = document.querySelector('#lives');
+    const levelElement = document.querySelector('#level');
     const startButton = document.querySelector('#start-button');
+    const bossHealthDisplay = document.querySelector('#boss-health');
+    const healthBar = document.querySelector('.health-bar');
 
     const GAME_CONFIG = {
         width: 15,
-        cellCount: 225, 
+        cellCount: 225,
         laserSpeed: 100,
         maxActiveLasers: 3,
-        invaderSpeed: 500,
-        powerUpDuration: 5000,
-        powerUpChance: 0.1,
+        levels: [
+            { invaderSpeed: 500, bossHealth: 5 },
+            { invaderSpeed: 400, bossHealth: 7 },
+            { invaderSpeed: 300, bossHealth: 10 }
+        ]
+    };
+
+    const ENEMY_TYPES = {
+        basic: {
+            points: 10,
+            health: 1,
+            className: 'invader'
+        },
+        zigzag: {
+            points: 20,
+            health: 2,
+            className: 'invader-zigzag'
+        },
+        boss: {
+            points: 100,
+            className: 'boss-invader'
+        }
     };
 
     let currentShooterIndex = 217;
@@ -23,11 +45,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let score = 0;
     let lives = 3;
     let gameActive = false;
+    let currentLevel = 0;
     let alienInvaders = [];
+    let bossHealth = 0;
+    let bossActive = false;
+    let cells;
 
-    // Create grid cells
     function createGrid() {
-        grid.innerHTML = ''; 
+        grid.innerHTML = '';
         for (let i = 0; i < GAME_CONFIG.cellCount; i++) {
             const cell = document.createElement('div');
             grid.appendChild(cell);
@@ -35,39 +60,57 @@ document.addEventListener('DOMContentLoaded', () => {
         cells = Array.from(grid.querySelectorAll('div'));
     }
 
-    let cells; 
-
-    // Set up alien positions
     function setupAliens() {
-        alienInvaders = [
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-            15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-            30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-        ];
-    }
+        alienInvaders = [];
+        if (!bossActive) {
+            // Regular level setup
+            const basicAliens = [
+                0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                15, 16, 17, 18, 19, 20, 21, 22, 23, 24
+            ];
+            const zigzagAliens = [
+                30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+            ];
 
-    // Draw aliens and shooter
-    function draw() {
-        cells.forEach(cell => cell.classList.remove('invader', 'shooter', 'laser', 'boom', 'power-up'));
+            alienInvaders = basicAliens.map(index => ({
+                index,
+                type: 'basic',
+                health: ENEMY_TYPES.basic.health
+            }));
 
-        alienInvaders.forEach(index => {
-            if (cells[index]) {
-                cells[index].classList.add('invader');
+            if (currentLevel > 0) {
+                alienInvaders.push(...zigzagAliens.map(index => ({
+                    index,
+                    type: 'zigzag',
+                    health: ENEMY_TYPES.zigzag.health
+                })));
             }
-        });
-        if (cells[currentShooterIndex]) {
-            cells[currentShooterIndex].classList.add('shooter');
+        } else {
+            // Boss setup
+            bossHealth = GAME_CONFIG.levels[currentLevel].bossHealth;
+            alienInvaders = [{
+                index: 7,
+                type: 'boss',
+                health: bossHealth
+            }];
+            updateBossHealthDisplay();
         }
     }
 
-    // Move shooter
+    function updateBossHealthDisplay() {
+        if (bossActive) {
+            bossHealthDisplay.classList.remove('hidden');
+            const healthPercentage = (bossHealth / GAME_CONFIG.levels[currentLevel].bossHealth) * 100;
+            healthBar.style.width = `${healthPercentage}%`;
+        } else {
+            bossHealthDisplay.classList.add('hidden');
+        }
+    }
+
     function moveShooter(e) {
         if (!gameActive) return;
 
-        const currentShooter = cells[currentShooterIndex];
-        if (currentShooter) {
-            currentShooter.classList.remove('shooter'); 
-        }
+        cells[currentShooterIndex].classList.remove('shooter');
 
         switch (e.key) {
             case 'ArrowLeft':
@@ -78,121 +121,244 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
         }
 
-        if (currentShooterIndex >= 0 && currentShooterIndex < cells.length) {
+        cells[currentShooterIndex].classList.add('shooter');
+    }
+
+    function draw() {
+        cells.forEach(cell => {
+            cell.className = ''; // Clear all classes
+        });
+
+        alienInvaders.forEach(alien => {
+            if (cells[alien.index]) {
+                cells[alien.index].classList.add(ENEMY_TYPES[alien.type].className);
+            }
+        });
+
+        if (cells[currentShooterIndex]) {
             cells[currentShooterIndex].classList.add('shooter');
+        }
+
+        activeLasers.forEach(laser => {
+            if (cells[laser.position]) {
+                cells[laser.position].classList.add(laser.type === 'boss' ? 'boss-laser' : 'laser');
+            }
+        });
+    }
+
+    function moveInvaders() {
+        const leftEdge = alienInvaders.some(alien => alien.index % GAME_CONFIG.width === 0);
+        const rightEdge = alienInvaders.some(alien => alien.index % GAME_CONFIG.width === GAME_CONFIG.width - 1);
+
+        alienInvaders.forEach(alien => {
+            if (alien.type === 'boss') {
+                moveBoss(alien);
+            } else {
+                moveRegularAlien(alien, leftEdge, rightEdge);
+            }
+        });
+
+        if (bossActive && Math.random() < 0.05) {
+            shootBossLaser();
+        }
+
+        checkCollisions();
+        draw();
+    }
+
+    function moveRegularAlien(alien, leftEdge, rightEdge) {
+        if ((rightEdge && goingRight) || (leftEdge && !goingRight)) {
+            alien.index += GAME_CONFIG.width;
+            direction *= -1;
+            goingRight = !goingRight;
+        } else {
+            alien.index += direction;
+            if (alien.type === 'zigzag' && Math.random() < 0.2) {
+                alien.index += Math.floor(Math.random() * 3) - 1;
+            }
         }
     }
 
-    // Shoot lasers
+    function moveBoss(boss) {
+        const currentX = boss.index % GAME_CONFIG.width;
+        if (currentX === 0 || currentX === GAME_CONFIG.width - 1) {
+            direction *= -1;
+        }
+        boss.index += direction;
+    }
+
+    function shootBossLaser() {
+        const bossAlien = alienInvaders.find(alien => alien.type === 'boss');
+        if (bossAlien) {
+            const laser = {
+                position: bossAlien.index + GAME_CONFIG.width,
+                type: 'boss',
+                id: null
+            };
+
+            function moveBossLaser() {
+                if (cells[laser.position]) {
+                    cells[laser.position].classList.remove('boss-laser');
+                }
+                laser.position += GAME_CONFIG.width;
+
+                if (laser.position >= GAME_CONFIG.cellCount) {
+                    clearInterval(laser.id);
+                    return;
+                }
+
+                if (laser.position === currentShooterIndex) {
+                    handlePlayerHit();
+                    clearInterval(laser.id);
+                    return;
+                }
+
+                if (cells[laser.position]) {
+                    cells[laser.position].classList.add('boss-laser');
+                }
+            }
+
+            laser.id = setInterval(moveBossLaser, GAME_CONFIG.laserSpeed);
+        }
+    }
+
+    function handlePlayerHit() {
+        lives--;
+        livesElement.textContent = lives;
+        if (lives <= 0) {
+            gameOver('Game Over - You ran out of lives!');
+        }
+    }
+
     function shootLaser(e) {
         if (!gameActive || e.key !== 'ArrowUp' || activeLasers.length >= GAME_CONFIG.maxActiveLasers) return;
 
-        const newLaser = { position: currentShooterIndex, id: null };
+        const laser = {
+            position: currentShooterIndex,
+            type: 'player',
+            id: null
+        };
 
         function moveLaser() {
-            if (newLaser.position < 0 || newLaser.position >= cells.length) {
-                clearInterval(newLaser.id);
-                activeLasers = activeLasers.filter(laser => laser.id !== newLaser.id);
+            if (cells[laser.position]) {
+                cells[laser.position].classList.remove('laser');
+            }
+            laser.position -= GAME_CONFIG.width;
+
+            if (laser.position < 0) {
+                clearInterval(laser.id);
+                activeLasers = activeLasers.filter(l => l.id !== laser.id);
                 return;
             }
 
-            cells[newLaser.position].classList.remove('laser'); 
-            newLaser.position -= GAME_CONFIG.width; 
-
-            if (newLaser.position < 0) {
-                clearInterval(newLaser.id);
-                activeLasers = activeLasers.filter(laser => laser.id !== newLaser.id);
+            const hitAlien = alienInvaders.find(alien => alien.index === laser.position);
+            if (hitAlien) {
+                handleAlienHit(hitAlien, laser);
                 return;
             }
 
-            if (handleLaserCollision(newLaser)) {
-                clearInterval(newLaser.id);
-                activeLasers = activeLasers.filter(laser => laser.id !== newLaser.id);
-                return;
-            }
-
-            if (newLaser.position >= 0 && newLaser.position < cells.length) {
-                cells[newLaser.position].classList.add('laser');
+            if (cells[laser.position]) {
+                cells[laser.position].classList.add('laser');
             }
         }
 
-        newLaser.id = setInterval(moveLaser, GAME_CONFIG.laserSpeed);
-        activeLasers.push(newLaser);
+        laser.id = setInterval(moveLaser, GAME_CONFIG.laserSpeed);
+        activeLasers.push(laser);
     }
 
-    // Handle laser collisions
-    function handleLaserCollision(laser) {
-        const cell = cells[laser.position];
-        if (cell.classList.contains('invader')) {
-            cell.classList.remove('invader', 'laser');
-            cell.classList.add('boom');
-            const alienIndex = alienInvaders.indexOf(laser.position);
-            if (alienIndex !== -1) {
-                aliensRemoved.push(alienIndex);
-                score += 10;
-                scoreElement.textContent = score;
+    function handleAlienHit(alien, laser) {
+        clearInterval(laser.id);
+        activeLasers = activeLasers.filter(l => l.id !== laser.id);
+        cells[laser.position].classList.remove('laser');
+        
+        alien.health--;
+        if (alien.health <= 0) {
+            cells[alien.index].classList.add('boom');
+            setTimeout(() => cells[alien.index].classList.remove('boom'), 300);
+            
+            score += ENEMY_TYPES[alien.type].points;
+            scoreElement.textContent = score;
+            
+            if (alien.type === 'boss') {
+                bossHealth = 0;
+                updateBossHealthDisplay();
+                nextLevel();
+            } else {
+                alienInvaders = alienInvaders.filter(a => a !== alien);
+                if (alienInvaders.length === 0) {
+                    startBossFight();
+                }
             }
-
-            setTimeout(() => {
-                cell.classList.remove('boom');
-            }, 300);
-            return true;
-        }
-        return false;
-    }
-
-    // Move invaders
-    function moveInvaders() {
-        const leftEdge = alienInvaders[0] % GAME_CONFIG.width === 0;
-        const rightEdge = alienInvaders[alienInvaders.length - 1] % GAME_CONFIG.width === GAME_CONFIG.width - 1;
-
-        if (rightEdge && goingRight) {
-            alienInvaders = alienInvaders.map(invader => invader + GAME_CONFIG.width + 1);
-            goingRight = false;
-            direction = -1;
-        }
-
-        if (leftEdge && !goingRight) {
-            alienInvaders = alienInvaders.map(invader => invader + GAME_CONFIG.width - 1);
-            goingRight = true;
-            direction = 1;
-        }
-
-        alienInvaders = alienInvaders.map(invader => invader + direction);
-        draw();
-
-        if (alienInvaders.some(index => index < cells.length && cells[index].classList.contains('shooter'))) {
-            lives--;
-            livesElement.textContent = lives;
-            if (lives <= 0) gameOver();
-        }
-
-        if (alienInvaders.some(index => index >= GAME_CONFIG.cellCount - GAME_CONFIG.width && index < cells.length)) {
-            gameOver();
         }
     }
 
-    // Game over logic
-    function gameOver() {
+    function startBossFight() {
+        bossActive = true;
         clearInterval(invadersId);
+        setupAliens();
+        invadersId = setInterval(moveInvaders, GAME_CONFIG.levels[currentLevel].invaderSpeed * 0.8);
+    }
+
+    function nextLevel() {
+        currentLevel++;
+        if (currentLevel >= GAME_CONFIG.levels.length) {
+            gameOver('Congratulations! You beat all levels!');
+            return;
+        }
+
+        bossActive = false;
+        levelElement.textContent = currentLevel + 1;
+        clearInterval(invadersId);
+        setupLevel();
+    }
+
+    function checkCollisions() {
+        // Check if aliens reached the shooter's row
+        if (alienInvaders.some(alien => alien.index >= GAME_CONFIG.cellCount - GAME_CONFIG.width)) {
+            gameOver('Game Over - Aliens reached Earth!');
+        }
+
+        // Check direct collisions with shooter
+        if (alienInvaders.some(alien => alien.index === currentShooterIndex)) {
+            handlePlayerHit();
+        }
+    }
+
+    function setupLevel() {
+        direction = 1;
+        goingRight = true;
+        activeLasers.forEach(laser => clearInterval(laser.id));
+        activeLasers = [];
+        setupAliens();
+        draw();
+        invadersId = setInterval(moveInvaders, GAME_CONFIG.levels[currentLevel].invaderSpeed);
+    }
+
+    function gameOver(message) {
         gameActive = false;
-        alert('Game Over!');
+        clearInterval(invadersId);
+        activeLasers.forEach(laser => clearInterval(laser.id));
+        alert(message);
         startButton.disabled = false;
     }
 
-    // Start game
     function startGame() {
-        createGrid();
-        setupAliens();
-        draw();
-        gameActive = true;
+        currentLevel = 0;
         score = 0;
         lives = 3;
+        bossActive = false;
+        gameActive = true;
+        
         scoreElement.textContent = score;
         livesElement.textContent = lives;
+        levelElement.textContent = currentLevel + 1;
+        
         startButton.disabled = true;
-        invadersId = setInterval(moveInvaders, GAME_CONFIG.invaderSpeed);
+        createGrid();
+        setupLevel();
     }
+
+    // Event Listeners
     startButton.addEventListener('click', startGame);
     document.addEventListener('keydown', (e) => {
         moveShooter(e);

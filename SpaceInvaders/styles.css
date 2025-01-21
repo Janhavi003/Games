@@ -1,4 +1,3 @@
-/* styles.css */
 * {
     margin: 0;
     padding: 0;
@@ -41,6 +40,8 @@ body {
     width: 300px;
     font-size: 1.2rem;
     margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .grid {
@@ -67,6 +68,24 @@ body {
     border-radius: 50%;
 }
 
+.invader-zigzag {
+    background-color: #ff00ff;
+    border-radius: 50%;
+    animation: zigzag 2s infinite;
+}
+
+.boss-invader {
+    background-color: #ff4500;
+    border-radius: 10%;
+    transform: scale(1.5);
+    animation: pulse 2s infinite;
+}
+
+.boss-laser {
+    background-color: #ff4500;
+    animation: flash 0.2s infinite;
+}
+
 .laser {
     background-color: #fff;
 }
@@ -77,10 +96,31 @@ body {
     animation: explode 300ms forwards;
 }
 
-.power-up {
-    background-color: #ffff00;
-    border-radius: 50%;
-    animation: pulse 1s infinite;
+.boss-health {
+    width: 100%;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.health-bar {
+    width: 100%;
+    height: 10px;
+    background-color: #333;
+    margin-top: 5px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.health-bar::before {
+    content: '';
+    display: block;
+    height: 100%;
+    background-color: #ff4500;
+    transition: width 0.3s ease;
+}
+
+.hidden {
+    display: none;
 }
 
 .controls {
@@ -115,37 +155,22 @@ body {
     transform: none;
 }
 
-.power-up-notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(255, 255, 0, 0.9);
-    color: black;
-    padding: 10px 20px;
-    border-radius: 5px;
-    animation: slideDown 0.5s ease-out, fadeOut 0.5s ease-in 1.5s forwards;
-    z-index: 1000;
+@keyframes zigzag {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(3px); }
+    75% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+    0% { transform: scale(1.5); }
+    50% { transform: scale(1.7); }
+    100% { transform: scale(1.5); }
 }
 
 @keyframes explode {
     0% { transform: scale(1); opacity: 1; }
     100% { transform: scale(2); opacity: 0; }
-}
-
-@keyframes slideDown {
-    from { transform: translateX(-50%) translateY(-100%); }
-    to { transform: translateX(-50%) translateY(0); }
-}
-
-@keyframes fadeOut {
-    to { opacity: 0; }
 }
 
 @keyframes flash {

@@ -59,3 +59,12 @@ body {
     background: radial-gradient(circle, #ff0000, #cc0000);
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
 }
+.power-up {
+    position: absolute;
+    width: 30px;
+    height: 15px;
+    border-radius: 5px;
+}
+.wide { background: purple; }
+.multiball { background: red; }
+.slow { background: green; }
