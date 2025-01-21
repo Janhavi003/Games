@@ -3,6 +3,7 @@ let currentPlayer = 'red';
 let scores = { red: 0, yellow: 0 };
 let soundEnabled = true;
 let turnTimer;
+let winningCells = []; // Track winning cells
 const ROWS = 6;
 const COLS = 7;
 const TURN_TIME = 10000; // 10 seconds
@@ -12,6 +13,7 @@ function initGame() {
     const boardElement = document.getElementById('board');
     boardElement.innerHTML = '';
     board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
+    winningCells = []; // Reset winning cells
 
     for (let row = 0; row < ROWS; row++) {
         for (let col = 0; col < COLS; col++) {
@@ -62,6 +64,7 @@ function makeMove(col) {
 
     board[row][col] = currentPlayer;
     updateBoard();
+    playSound('dropSound');
 
     if (checkWin(row, col)) {
         playSound('winSound');
@@ -98,19 +101,35 @@ function switchTurn() {
 function aiMove() {
     let move = null;
 
-    // AI tries to block or win
+    // First, check for winning move
     for (let col = 0; col < COLS; col++) {
-        if (getLowestEmptyRow(col) !== null) {
-            board[getLowestEmptyRow(col)][col] = currentPlayer;
-            if (checkWin(getLowestEmptyRow(col), col)) {
+        const row = getLowestEmptyRow(col);
+        if (row !== null) {
+            board[row][col] = 'yellow';
+            if (checkWin(row, col)) {
                 move = col;
-                break;
             }
-            board[getLowestEmptyRow(col)][col] = null; // Undo test move
+            board[row][col] = null; // Undo test move
+            if (move !== null) break;
         }
     }
 
-    // Random move if no win/block is found
+    // If no winning move, check for blocking opponent's win
+    if (move === null) {
+        for (let col = 0; col < COLS; col++) {
+            const row = getLowestEmptyRow(col);
+            if (row !== null) {
+                board[row][col] = 'red'; // Test opponent's move
+                if (checkWin(row, col)) {
+                    move = col; // Block this position
+                }
+                board[row][col] = null; // Undo test move
+                if (move !== null) break;
+            }
+        }
+    }
+
+    // If no winning or blocking move, choose random
     if (move === null) {
         const availableCols = [...Array(COLS).keys()].filter(
             col => getLowestEmptyRow(col) !== null
@@ -128,13 +147,22 @@ function checkWin(row, col) {
 
     return directions.some(([dx, dy]) => {
         let count = 1;
-        count += countDirection(row, col, dx, dy);
-        count += countDirection(row, col, -dx, -dy);
-        return count >= 4;
+        winningCells = [[row, col]]; // Start with the current cell
+        
+        // Check in positive direction
+        count += countDirection(row, col, dx, dy, true);
+        // Check in negative direction
+        count += countDirection(row, col, -dx, -dy, true);
+        
+        if (count >= 4) {
+            return true;
+        }
+        winningCells = []; // Reset if this direction didn't win
+        return false;
     });
 }
 
-function countDirection(row, col, dx, dy) {
+function countDirection(row, col, dx, dy, trackCells = false) {
     let count = 0;
     let currentRow = row + dx;
     let currentCol = col + dy;
@@ -147,11 +175,22 @@ function countDirection(row, col, dx, dy) {
         board[currentRow][currentCol] === currentPlayer
     ) {
         count++;
+        if (trackCells) {
+            winningCells.push([currentRow, currentCol]);
+        }
         currentRow += dx;
         currentCol += dy;
     }
 
     return count;
+}
+
+function highlightWinningCells() {
+    const cells = document.getElementsByClassName('cell');
+    winningCells.forEach(([row, col]) => {
+        const cell = cells[row * COLS + col];
+        cell.classList.add('winner');
+    });
 }
 
 function checkDraw() {
@@ -176,10 +215,13 @@ function updateBoard() {
     }
 }
 
+// Event Listeners
 document.addEventListener('click', (e) => {
     if (!e.target.matches('.cell')) return;
     const col = parseInt(e.target.dataset.col);
-    makeMove(col);
+    if (currentPlayer === 'red' || !document.getElementById('aiToggle').checked) {
+        makeMove(col);
+    }
 });
 
 document.getElementById('themeSelect').addEventListener('change', (e) => {
@@ -193,7 +235,12 @@ document.getElementById('resetScores').addEventListener('click', () => {
 
 document.getElementById('resetBtn').addEventListener('click', initGame);
 
+document.getElementById('soundToggle').addEventListener('change', (e) => {
+    soundEnabled = e.target.checked;
+});
+
+// Initialize game when DOM is loaded
 window.addEventListener('DOMContentLoaded', () => {
     initGame();
-    document.body.className = 'classic'; 
+    document.body.className = 'classic';
 });
