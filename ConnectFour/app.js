@@ -3,17 +3,17 @@ let currentPlayer = 'red';
 let scores = { red: 0, yellow: 0 };
 let soundEnabled = true;
 let turnTimer;
-let winningCells = []; // Track winning cells
+let winningCells = []; 
 const ROWS = 6;
 const COLS = 7;
-const TURN_TIME = 10000; // 10 seconds
+const TURN_TIME = 10000; 
 
 function initGame() {
     clearTimeout(turnTimer);
     const boardElement = document.getElementById('board');
     boardElement.innerHTML = '';
     board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
-    winningCells = []; // Reset winning cells
+    winningCells = []; 
 
     for (let row = 0; row < ROWS; row++) {
         for (let col = 0; col < COLS; col++) {
@@ -92,7 +92,7 @@ function makeMove(col) {
 function switchTurn() {
     currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
     if (currentPlayer === 'yellow' && document.getElementById('aiToggle').checked) {
-        setTimeout(aiMove, 500); // AI delays for realism
+        setTimeout(aiMove, 500); 
     } else {
         resetTurnTimer();
     }
@@ -101,7 +101,6 @@ function switchTurn() {
 function aiMove() {
     let move = null;
 
-    // First, check for winning move
     for (let col = 0; col < COLS; col++) {
         const row = getLowestEmptyRow(col);
         if (row !== null) {
@@ -109,27 +108,26 @@ function aiMove() {
             if (checkWin(row, col)) {
                 move = col;
             }
-            board[row][col] = null; // Undo test move
+            board[row][col] = null; 
             if (move !== null) break;
         }
     }
 
-    // If no winning move, check for blocking opponent's win
     if (move === null) {
         for (let col = 0; col < COLS; col++) {
             const row = getLowestEmptyRow(col);
             if (row !== null) {
-                board[row][col] = 'red'; // Test opponent's move
+                board[row][col] = 'red'; 
                 if (checkWin(row, col)) {
-                    move = col; // Block this position
+                    move = col; 
                 }
-                board[row][col] = null; // Undo test move
+                board[row][col] = null; 
                 if (move !== null) break;
             }
         }
     }
 
-    // If no winning or blocking move, choose random
+
     if (move === null) {
         const availableCols = [...Array(COLS).keys()].filter(
             col => getLowestEmptyRow(col) !== null
@@ -147,17 +145,16 @@ function checkWin(row, col) {
 
     return directions.some(([dx, dy]) => {
         let count = 1;
-        winningCells = [[row, col]]; // Start with the current cell
-        
-        // Check in positive direction
+        winningCells = [[row, col]]; 
+
         count += countDirection(row, col, dx, dy, true);
-        // Check in negative direction
+
         count += countDirection(row, col, -dx, -dy, true);
         
         if (count >= 4) {
             return true;
         }
-        winningCells = []; // Reset if this direction didn't win
+        winningCells = []; 
         return false;
     });
 }
@@ -215,7 +212,6 @@ function updateBoard() {
     }
 }
 
-// Event Listeners
 document.addEventListener('click', (e) => {
     if (!e.target.matches('.cell')) return;
     const col = parseInt(e.target.dataset.col);
@@ -239,7 +235,6 @@ document.getElementById('soundToggle').addEventListener('change', (e) => {
     soundEnabled = e.target.checked;
 });
 
-// Initialize game when DOM is loaded
 window.addEventListener('DOMContentLoaded', () => {
     initGame();
     document.body.className = 'classic';

@@ -34,9 +34,8 @@ let lives = 3
 let level = 1
 let isInvincible = false
 let hasSpeedBoost = false
-let gameSpeed = 1000 // Base speed in milliseconds
+let gameSpeed = 1000 
 
-// Power-up system
 const powerUpTypes = ['invincibility', 'speedBoost', 'extraTime', 'extraLife']
 let activePowerUps = []
 
@@ -62,7 +61,7 @@ function moveFrog(e) {
         case 'ArrowUp':
             if (currentIndex - width * moveAmount >= 0) {
                 currentIndex -= width * moveAmount
-                score += 10 // Points for moving forward
+                score += 10 
             }
             break
         case 'ArrowDown':
@@ -77,7 +76,7 @@ function moveFrog(e) {
 }
 
 function spawnPowerUp() {
-    const spawnChance = 0.1 + (level * 0.02) // Increased chance with level
+    const spawnChance = 0.1 + (level * 0.02) 
     if (Math.random() < spawnChance) {
         const emptySquares = Array.from(squares).filter(square => 
             !square.classList.contains('frog') && 
@@ -105,7 +104,7 @@ function checkForPowerUp() {
 }
 
 function activatePowerUp(type) {
-    const duration = 5000 // 5 seconds for temporary power-ups
+    const duration = 5000 
     
     switch(type) {
         case 'invincibility':
@@ -137,7 +136,7 @@ function activatePowerUp(type) {
             break
     }
     
-    score += 50 // Bonus points for collecting power-ups
+    score += 50 
     scoreDisplay.textContent = score
 }
 
@@ -145,7 +144,7 @@ function autoMoveElements() {
     currentTime--
     timeLeftDisplay.textContent = currentTime
     
-    // Speed increases with level
+    
     const speedMultiplier = 1 + (level * 0.1)
     
     moveElements(logsLeft, 'left', speedMultiplier)
@@ -184,7 +183,7 @@ function checkOutComes() {
 
 function checkLose() {
     const currentSquare = squares[currentIndex]
-    // Check if the frog is on a car or off the grid
+    
     return currentSquare.classList.contains('car-left') || 
            currentSquare.classList.contains('car-right') ||
            currentSquare.classList.contains('water') ||
@@ -192,7 +191,7 @@ function checkLose() {
 }
 
 function handleLose() {
-    if (isInvincible) return // Frog is invincible, no lose
+    if (isInvincible) return 
     
     lives--
     livesDisplay.textContent = lives
@@ -209,13 +208,12 @@ function handleLose() {
 }
 
 function resetFrogPosition() {
-    currentIndex = 76 // Start position
+    currentIndex = 76 
     squares[currentIndex].classList.add('frog')
 }
 
 function checkWin() {
     const currentSquare = squares[currentIndex]
-    // Check if the frog reached the top
     return currentIndex < width
 }
 
@@ -224,9 +222,9 @@ function handleWin() {
     level++
     levelDisplay.textContent = level
     resetFrogPosition()
-    currentTime = 20 // Reset time
+    currentTime = 20 
     timeLeftDisplay.textContent = currentTime
-    score += 100 // Points for winning the level
+    score += 100 
     scoreDisplay.textContent = score
 }
 
