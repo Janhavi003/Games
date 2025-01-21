@@ -86,7 +86,7 @@ let powerUpActive = false;
 
 // Initialize blocks for current level
 function initializeBlocks() {
-    const rows = 3 + Math.min(level - 1, 2); // Add more rows with levels (max 5)
+    const rows = 3 + Math.min(level - 1, 2); 
     blocks = [];
     
     for (let j = 0; j < rows; j++) {
@@ -165,7 +165,6 @@ function moveUser(e) {
 
 // Check for collisions
 function checkCollisions(ball) {
-    // Block collisions
     for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i];
         if (
@@ -194,7 +193,6 @@ function checkCollisions(ball) {
                 level++;
                 initializeBlocks();
                 addBlocks();
-                // Increase ball speed with each level
                 balls.forEach(ball => {
                     ball.xDirection *= 1.1;
                     ball.yDirection *= 1.1;
@@ -233,7 +231,6 @@ function checkCollisions(ball) {
 
 // Move game elements
 function moveGame() {
-    // Move and check balls
     for (let i = balls.length - 1; i >= 0; i--) {
         balls[i].move();
         if (checkCollisions(balls[i])) {

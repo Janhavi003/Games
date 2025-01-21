@@ -100,7 +100,6 @@ body.fantasy {
 .winner {
     animation: winner 0.5s infinite;
 }
-
 .controls {
     margin-top: 20px;
     display: flex;

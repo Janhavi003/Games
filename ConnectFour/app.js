@@ -3,15 +3,17 @@ let currentPlayer = 'red';
 let scores = { red: 0, yellow: 0 };
 let soundEnabled = true;
 let turnTimer;
+let winningCells = []; 
 const ROWS = 6;
 const COLS = 7;
-const TURN_TIME = 10000; // 10 seconds
+const TURN_TIME = 10000; 
 
 function initGame() {
     clearTimeout(turnTimer);
     const boardElement = document.getElementById('board');
     boardElement.innerHTML = '';
     board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
+    winningCells = []; 
 
     for (let row = 0; row < ROWS; row++) {
         for (let col = 0; col < COLS; col++) {
@@ -62,6 +64,7 @@ function makeMove(col) {
 
     board[row][col] = currentPlayer;
     updateBoard();
+    playSound('dropSound');
 
     if (checkWin(row, col)) {
         playSound('winSound');
@@ -89,7 +92,7 @@ function makeMove(col) {
 function switchTurn() {
     currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
     if (currentPlayer === 'yellow' && document.getElementById('aiToggle').checked) {
-        setTimeout(aiMove, 500); // AI delays for realism
+        setTimeout(aiMove, 500); 
     } else {
         resetTurnTimer();
     }
@@ -98,19 +101,33 @@ function switchTurn() {
 function aiMove() {
     let move = null;
 
-    // AI tries to block or win
     for (let col = 0; col < COLS; col++) {
-        if (getLowestEmptyRow(col) !== null) {
-            board[getLowestEmptyRow(col)][col] = currentPlayer;
-            if (checkWin(getLowestEmptyRow(col), col)) {
+        const row = getLowestEmptyRow(col);
+        if (row !== null) {
+            board[row][col] = 'yellow';
+            if (checkWin(row, col)) {
                 move = col;
-                break;
             }
-            board[getLowestEmptyRow(col)][col] = null; // Undo test move
+            board[row][col] = null; 
+            if (move !== null) break;
         }
     }
 
-    // Random move if no win/block is found
+    if (move === null) {
+        for (let col = 0; col < COLS; col++) {
+            const row = getLowestEmptyRow(col);
+            if (row !== null) {
+                board[row][col] = 'red'; 
+                if (checkWin(row, col)) {
+                    move = col; 
+                }
+                board[row][col] = null; 
+                if (move !== null) break;
+            }
+        }
+    }
+
+
     if (move === null) {
         const availableCols = [...Array(COLS).keys()].filter(
             col => getLowestEmptyRow(col) !== null
@@ -128,13 +145,21 @@ function checkWin(row, col) {
 
     return directions.some(([dx, dy]) => {
         let count = 1;
-        count += countDirection(row, col, dx, dy);
-        count += countDirection(row, col, -dx, -dy);
-        return count >= 4;
+        winningCells = [[row, col]]; 
+
+        count += countDirection(row, col, dx, dy, true);
+
+        count += countDirection(row, col, -dx, -dy, true);
+        
+        if (count >= 4) {
+            return true;
+        }
+        winningCells = []; 
+        return false;
     });
 }
 
-function countDirection(row, col, dx, dy) {
+function countDirection(row, col, dx, dy, trackCells = false) {
     let count = 0;
     let currentRow = row + dx;
     let currentCol = col + dy;
@@ -147,11 +172,22 @@ function countDirection(row, col, dx, dy) {
         board[currentRow][currentCol] === currentPlayer
     ) {
         count++;
+        if (trackCells) {
+            winningCells.push([currentRow, currentCol]);
+        }
         currentRow += dx;
         currentCol += dy;
     }
 
     return count;
+}
+
+function highlightWinningCells() {
+    const cells = document.getElementsByClassName('cell');
+    winningCells.forEach(([row, col]) => {
+        const cell = cells[row * COLS + col];
+        cell.classList.add('winner');
+    });
 }
 
 function checkDraw() {
@@ -179,7 +215,9 @@ function updateBoard() {
 document.addEventListener('click', (e) => {
     if (!e.target.matches('.cell')) return;
     const col = parseInt(e.target.dataset.col);
-    makeMove(col);
+    if (currentPlayer === 'red' || !document.getElementById('aiToggle').checked) {
+        makeMove(col);
+    }
 });
 
 document.getElementById('themeSelect').addEventListener('change', (e) => {
@@ -193,7 +231,11 @@ document.getElementById('resetScores').addEventListener('click', () => {
 
 document.getElementById('resetBtn').addEventListener('click', initGame);
 
+document.getElementById('soundToggle').addEventListener('change', (e) => {
+    soundEnabled = e.target.checked;
+});
+
 window.addEventListener('DOMContentLoaded', () => {
     initGame();
-    document.body.className = 'classic'; 
+    document.body.className = 'classic';
 });

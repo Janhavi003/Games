@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupAliens() {
         alienInvaders = [];
         if (!bossActive) {
-            // Regular level setup
+           
             const basicAliens = [
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
                 15, 16, 17, 18, 19, 20, 21, 22, 23, 24
@@ -86,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 })));
             }
         } else {
-            // Boss setup
             bossHealth = GAME_CONFIG.levels[currentLevel].bossHealth;
             alienInvaders = [{
                 index: 7,
@@ -126,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function draw() {
         cells.forEach(cell => {
-            cell.className = ''; // Clear all classes
+            cell.className = ''; 
         });
 
         alienInvaders.forEach(alien => {
@@ -313,12 +312,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkCollisions() {
-        // Check if aliens reached the shooter's row
         if (alienInvaders.some(alien => alien.index >= GAME_CONFIG.cellCount - GAME_CONFIG.width)) {
             gameOver('Game Over - Aliens reached Earth!');
         }
 
-        // Check direct collisions with shooter
         if (alienInvaders.some(alien => alien.index === currentShooterIndex)) {
             handlePlayerHit();
         }
@@ -358,7 +355,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setupLevel();
     }
 
-    // Event Listeners
     startButton.addEventListener('click', startGame);
     document.addEventListener('keydown', (e) => {
         moveShooter(e);
